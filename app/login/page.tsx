@@ -4,8 +4,8 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, Lock, User, XCircle } from "lucide-react";
 
-const VALID_USERNAME = "ahsanzahid";
-const VALID_PASSWORD = "ahsanzahid2019";
+const VALID_USERNAME = "ahsanzahid@gmail.com";
+const VALID_PASSWORD = "IosJob@2019";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -133,3 +133,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
