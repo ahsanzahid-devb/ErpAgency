@@ -249,13 +249,36 @@ export default function App() {
     handleCloseModal();
   };
 
+  const resolveClientId = async (rawClientName: FormDataEntryValue | null) => {
+    const clientName = String(rawClientName || "").trim();
+    if (!clientName) return null;
+
+    const existingClient = clients.find(
+      c => String(c.name || "").trim().toLowerCase() === clientName.toLowerCase()
+    );
+    if (existingClient) return existingClient.id;
+
+    const { data, error } = await supabaseQuery('clients', 'POST', [{ name: clientName }]);
+    if (data && data.length > 0 && !error) {
+      setClients([...clients, data[0]]);
+      return data[0].id;
+    }
+
+    return null;
+  };
+
   const handleSaveProject = async (e: any) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const isEdit = !!editingEntity;
+    const clientId = await resolveClientId(fd.get("clientName"));
+    if (!clientId) {
+      alert("Client save nahi ho saka. Dobara try karein.");
+      return;
+    }
     
     const dbProject = {
-      client_id: fd.get("clientId") || null, 
+      client_id: clientId, 
       name: fd.get("name"),
       department: fd.get("department"), 
       contract_amount: Number(fd.get("contractAmount")),
@@ -953,10 +976,14 @@ export default function App() {
             <div className="grid grid-cols-2 gap-5">
               <div>
                 <label className="block text-xs font-medium text-white/50 mb-1.5">Client Name *</label>
-                <select required name="clientId" defaultValue={editingEntity?.clientId || ""} className="w-full bg-[#0a0f1c] border border-white/10 rounded-lg px-4 py-2.5 text-white outline-none focus:border-blue-500 transition">
-                  <option value="">Select Client...</option>
-                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <input
+                  required
+                  name="clientName"
+                  type="text"
+                  placeholder="Enter client name..."
+                  defaultValue={editingEntity?.clientName || clients.find(c => c.id === editingEntity?.clientId)?.name || ""}
+                  className="w-full bg-[#0a0f1c] border border-white/10 rounded-lg px-4 py-2.5 text-white outline-none focus:border-blue-500 transition"
+                />
               </div>
               <div>
                 <label className="block text-xs font-medium text-white/50 mb-1.5">Department *</label>
